@@ -7,13 +7,13 @@ import sys
 sys.setrecursionlimit(11000)
 
 class Node:
-    def __init__(self, value):
-        self.value = value
+    def __init__(self, data, parent=None):
+        self.parent = parent
+        self.data = data
         self.left = None
         self.right = None
         self.height = 1
-
-
+    
 class AVLTree:
     def __init__(self):
         self.root = None
@@ -28,35 +28,55 @@ class AVLTree:
             return 0
         return self.height(node.left) - self.height(node.right)
 
-    def insert(self, root, value):
-        if not root:
-            return Node(value)
-        elif value < root.value:
-            root.left = self.insert(root.left, value)
-        else:
-            root.right = self.insert(root.right, value)
+    def insert(self, root, data):
+        current = root
+        parent = None
 
-        root.height = 1 + max(self.height(root.left), self.height(root.right))
-        balance = self.balance(root)
+        while current is not None:
+            parent = current
+            if data <= current.data:
+                current = current.left
+            else:
+                current = current.right
+
+        new_node = Node(data, parent) 
+        if root is None:
+            root = new_node
+        elif data <= parent.data:
+            parent.left = new_node
+        else:
+            parent.right = new_node
         
+        self.set_height(root)
+            
         return root
     
-    def search(self, root, value):
-        if not root or root.value == value:
-            return root
-        if root.value < value:
-            return self.search(root.right, value)
-        return self.search(root.left, value)
+    def search(self, root, data):
+        current = root
+        while current is not None:
+            if data == current.data:
+                return current
+            elif data <= current.data:
+                current = current.left
+            else:
+                current = current.right
+        return None
     
-    def insert_value(self, value):
-        self.root = self.insert(self.root, value)
+    def insert_data(self, data):
+        self.root = self.insert(self.root, data)
         
-    def search_value(self, value):
-        return self.search(self.root, value)
+    def search_data(self, data):
+        return self.search(self.root, data)
     
+    def set_height(self, root):
+        if root is not None:
+            self.set_height(root.left)
+            self.set_height(root.right)
+            root.height = 1 + max(self.height(root.left), self.height(root.right))
+        
 def doTasks(tree, tasks):
     for task in tasks:
-        tree.search_value(task)
+        tree.search_data(task)
 
 if __name__ == "__main__":
     largest_absolute_balances = []
@@ -69,7 +89,7 @@ if __name__ == "__main__":
         tree = AVLTree()
         random.shuffle(tasks)
         for task in tasks:
-            tree.insert_value(task)
+            tree.insert_data(task)
         
         largest_absolute_balance = abs(tree.balance(tree.root))
         largest_absolute_balances.append(largest_absolute_balance)
